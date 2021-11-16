@@ -1,164 +1,149 @@
-const quiz= document.getElementById('quiz')
-const answerID = document.querySelectorAll('.answer')
-const questionID = document.getElementById('question')
-const A = document.getElementById('ansA')
-const B = document.getElementById('ansB')
-const C = document.getElementById('ansC')
-const D = document.getElementById('ansD')
-const submitBtn = document.getElementById('submit')
+'use strict';
 
-const quizData = [
-    { 
-        question: "JavaScript is a ___ -side programming language?",
-        A: "Client",
-        B: "Server",
-        C: "Both",
-        D: "None",
-        correct: "B",
-    },
-    {
-        question: "Which company developed JavaScript?",
-        A: "Netscape",
-        B: "Bell Lab",
-        C: "Sun Microsystems",
-        D: "IBM",
-        correct: "D",
-    },
-    {
-        question: "Which of the following is not JavaScript frameworks or libraries?",
-        A: "Undefined",
-        B: "Number",
-        D: "Float",
-        C: "Boolean",
-        correct: "c",
-    },
-    {
-        question: "What year was JavaScript launched?",
-        A: "1996",
-        B: "1995",
-        C: "1994",
-        D: "none of the above",
-        correct: "b",
-    },
-    {
-        question: "What is the original name of JavaScript?",
-        A: "LiveScript",
-        B: "EScript",
-        C: "Mocha",
-        D: "JavaScript",
-        correct: "c",
-    },
-    {
-        question: "Which of them is not the looping structures in JavaScript?",
-        A: "while",
-        B: "for",
-        C: "for which",
-        D: "do while",
-        correct: "a",
-    },
-    {
-        question: "What are the types of pop-up boxes available in JavaScrip",
-        A: "Confirm",
-        B: "Prompt",
-        C: "Alert",
-        D: "All of the above",
-        correct: "",
-    },
-    {
-        question: "The _______ method of an Array object adds and/or removes elements from an array.",
-        A: "Reverse",
-        B: "Shift",
-        C: "Splice",
-        D: "Slice",
-        correct: "C",
-    },
-    {
-        question: "How do you find the minimum of x and y using JavaScript?",
-        A: "min(x,y)",
-        B: "Math.min(x,y)",
-        C: " Math.min(xy)",
-        D: " min(xy)",
-        correct: "B",
-    },
-    {
-        question: "Determine the result – String(“Hello”) === “Hello”;",
-        A: "True",
-        B: "False",
-        C: "SyntaxError",
-        D: "ReferenceError",
-        correct: "B",
-    },
-
-];
+let userScore = 0;
+let questionCount = 0;
 
 
-let currentQuiz = 0
-let score = 0
-
-
-function loadQuiz(quizData) {
-    document.getElementById(quizData)
+function updateScore() {
+	userScore++;
 }
 
-quiz();
-    
-    // deselectAnswers()
-    
-    const currentQuizData = quizData[currentQuiz]
-    
-    questionID.innerText = currentQuizData.question
-    ansA.innerText = currentQuizData.a
-    ansB.innerText = currentQuizData.b
-    ansC.innerText = currentQuizData.c
-    ansD.innerText = currentQuizData.d
-
-
-function deselectAnswers() {
-    answerID.forEach(answerID => answerID.checked = false)
+function updateQuestionCount() {
+	questionCount++;
+	$('.currentQuestion').text(questionCount);
+}
+// when start button is pressed, update the page/DOM to show the question page/begin quiz
+function start() {
+	$('.startButtonContainer').on('click', '.startButton', function(event) {
+		$('.intro').remove();
+		$('.startButtonContainer').remove();
+		$('.quizFormContainer').css('display', 'block');
+		console.log('start button pressed');
+	});
 }
 
-function getSelected() {
-    let answer
-    answerID.forEach(answerID => {
-        if (answerID.checked) {
-            answer = answerID.id
-        }
-    });
-    return answer
+// this function will contain the HTML that's needed to populate the form with the quiz questions,
+// it must access the objects from answerKey.js and use it to generate the questions one at a time until
+// it reaches the end of the questions. 
+function addQuestions() {
+	if(questionCount < quizData.length) {
+		return `
+			<div class="questionNum${questionCount}">
+				<h2 class="quizQuestion">${quizData[questionCount].question}</h2>
+				<form class="questionForm">
+					<fieldset id="fieldset" name="answerOptions">
+					<legend id="legend">Answers</legend>
+						<div class='answerBox col-6'>
+							<label class="answerOption">
+								<input type="radio" value="${quizData[questionCount].choices[0]}" name="answer" tabindex="0" required>
+								<span>${quizData[questionCount].choices[0]}</span>
+							</label>
+						</div>
+						<div class='answerBox col-6'>
+							<label class="answerOption">
+								<input type="radio" value="${quizData[questionCount].choices[1]}" name="answer" tabindex="1" required>
+								<span>${quizData[questionCount].choices[1]}</span>
+							</label>
+						</div>
+						<div class='answerBox col-6'>
+							<label class="answerOption">
+								<input type="radio" value="${quizData[questionCount].choices[2]}" name="answer" tabindex="2" required>
+								<span>${quizData[questionCount].choices[2]}</span>
+							</label>
+						</div>
+						<div class='answerBox col-6'>
+							<label class="answerOption">
+								<input type="radio" value="${quizData[questionCount].choices[3]}" name="answer" tabindex="3" required>
+								<span>${quizData[questionCount].choices[3]}</span>
+							</label>
+						</div>
+						<div class="submitAnswerButtonContain col-12"><button type="submit" class="submitAnswerButton" tabindex="4">Submit</button></div>
+
+					</fieldset>
+				</form>
+			</div>`;
+	}
+	else {
+		showResults();
+		restart();
+	}
 }
 
-submitBtn.addEventListener('click', () => {
-    const answer = getSelected()
-    if(answerID) {
-        if(answerID === quizData[currentQuiz].correct) {
-            score++
-        }
+// this function will handle answer submission and checking to see if the selected choice is correct
+function checkUserAnswer() {
+	$('.questionForm').on('submit', function(event) {
+		console.log('submit pressed');
+		event.preventDefault();
+		let userAnswer = $('input[name=answer]:checked').val();
+		console.log(userAnswer);
+		let correctAnswer = `${quizData[questionCount].correct}`;
+		console.log(correctAnswer);
 
-        currentQuiz++
+		// If answer is right, then update DOM to provide feedback that user was CORRECT
+		if(userAnswer === correctAnswer){
+			$('.quizFormContainer').html(`
+				<div class="questionFeedback_Correct col-12">
+					<h2 id="correct">Correct!</h2>
+					<div class="nextQuestionContain"><button type="button" class="nextQuestion">Next</button></div>
+				</div>
+			`);
+			updateScore();
+			updateQuestionCount();
+		}
+		else{
+			$('.quizFormContainer').html(`
+				<div class="questionFeedback_Wrong col-12">
+					<h2 id="wrong">Wrong!</h2>
+					<h2 id="wrong">The correct answer is: ${quizData[questionCount].correct}</h2>
+					<div class="nextQuestionContain"><button class="nextQuestion">Next</button></div>
+				</div>
+			`);
+			updateQuestionCount();
+		}
 
-        if(currentQuiz < quizData.length) {
-            loadQuiz()
-        } else {
-            quiz.innerHTML = `
-        <h2>You got ${score}/${quizData.length} questions right!</h2>
+	});
+}
 
-        <button onclick="location.reload()">Reload</button>
-        `
-        }
-    }
-})
+// this function handles the nextQuestion button, makes the page display the next question
+function nextQuestion() {
+	$('main').on('click', '.nextQuestion', function(event){
+		renderForm();
+		checkUserAnswer();
+		console.log('next pressed');
+	});
+}
 
-// var sec = 15;
-// var time = setInterval(mytimer, 1000);
+// this function will update the page with HTML for the user's results and the button to restart the quiz
+function showResults() {
+	$('.quizFormContainer').html(`
+		<div class="finalResults">
+			<h2>Your Final Results</h2>
+			<h2>You were correct on ${userScore} out of 10 questions</h2>
+			<div class="restartQuizButtonContain"><button class="restartQuizButton">Restart</button></div>
+		</div>
+	`);
+	console.log(userScore);
+}
 
-// function sec() {
-//     document.getElementById('time').innerHTML=sec + "Time Remaining:";
-//     sec--;
-//     if (sec = -1){
-//     clearInterval(time);
-//     alert("You're out of time!");
-//     document.getElementById('mytime').innerHTML='sec';
-//     // or...
-// }
-// }; 1000;
+// this function will handle the restart button click event
+function restart() {
+	$('main').on('click', '.restartQuizButton', function(event){
+		console.log('restart pressed');
+		location.reload();
+	});
+}
 
+function renderForm() {
+	$('.quizFormContainer').html(addQuestions());
+
+}
+
+function generateNewQuiz() {
+	start();
+	renderForm();
+	checkUserAnswer();
+	nextQuestion();
+	
+}
+
+$(generateNewQuiz);
